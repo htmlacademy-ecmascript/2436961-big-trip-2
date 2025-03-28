@@ -1,7 +1,7 @@
 # Проект «Большое путешествие»
 
-* Студент: [Дарья Полянская](https://up.htmlacademy.ru/ecmascript-individual/2/user/2436961).
-* Наставник: `Неизвестно`.
+- Студент: [Дарья Полянская](https://up.htmlacademy.ru/ecmascript-individual/2/user/2436961).
+- Наставник: `Артур Галимов`.
 
 ---
 
