@@ -1,4 +1,5 @@
 import TripPresenter from './presenter/trip-presenter.js';
+import PointsModel from './model/point.js';
 import FiltersView from './view/filters.js';
 import {render} from './render.js';
 
@@ -6,5 +7,6 @@ const tripControlFiltersContainer = document.querySelector('.trip-controls__filt
 render(new FiltersView(), tripControlFiltersContainer);
 
 const tripEventsContainer = document.querySelector('.trip-events');
-const tripPresenter = new TripPresenter(tripEventsContainer);
+const pointsModel = new PointsModel();
+const tripPresenter = new TripPresenter(tripEventsContainer, pointsModel);
 tripPresenter.init();
