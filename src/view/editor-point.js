@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 import {humanizePointDate} from '../util.js';
 
 function createOffersOfPointTemplate(offers, checkedOffers) {
@@ -16,16 +16,16 @@ function createOffersOfPointTemplate(offers, checkedOffers) {
   `;
 }
 
-function createEditorFormTemplate(point, offers, checkedOffers, destination) {
+function createEditorFormTemplate(point, offers, checkedOffers, destinations) {
   return (`<li class="trip-events__item">
               <form class="event event--edit" action="#" method="post">
                 <header class="event__header">
                   <div class="event__type-wrapper">
-                    <label class="event__type  event__type-btn" for="event-type-toggle-${destination.id}">
+                    <label class="event__type  event__type-btn" for="event-type-toggle-${destinations.id}">
                       <span class="visually-hidden">Choose event type</span>
                       <img class="event__type-icon" width="17" height="17" src="img/icons/${point.type}.png" alt="Event type icon">
                     </label>
-                    <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${destination.id}" type="checkbox">
+                    <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${destinations.id}" type="checkbox">
 
                     <div class="event__type-list">
                       <fieldset class="event__type-group">
@@ -80,11 +80,11 @@ function createEditorFormTemplate(point, offers, checkedOffers, destination) {
                   </div>
 
                   <div class="event__field-group  event__field-group--destination">
-                    <label class="event__label  event__type-output" for="event-destination-${destination.id}">
+                    <label class="event__label  event__type-output" for="event-destination-${destinations.id}">
                       ${point.type}
                     </label>
-                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.city}" list="destination-list-${destination.id}">
-                    <datalist id="destination-list-${destination.id}">
+                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinations.city}" list="destination-list-${destinations.id}">
+                    <datalist id="destination-list-${destinations.id}">
                       <option value="Amsterdam"></option>
                       <option value="Geneva"></option>
                       <option value="Chamonix"></option>
@@ -104,7 +104,7 @@ function createEditorFormTemplate(point, offers, checkedOffers, destination) {
                       <span class="visually-hidden">Price</span>
                       €
                     </label>
-                    <input class="event__input  event__input--price" id="event-price-${destination.id}" type="text" name="event-price" value="${point.price}">
+                    <input class="event__input  event__input--price" id="event-price-${destinations.id}" type="text" name="event-price" value="${point.price}">
                   </div>
 
                   <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -124,34 +124,45 @@ function createEditorFormTemplate(point, offers, checkedOffers, destination) {
 
                   <section class="event__section  event__section--destination">
                     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-                    <p class="event__destination-description">${destination.description}</p>
+                    <p class="event__destination-description">${destinations.description}</p>
                   </section>
                 </section>
               </form>
             </li>`);
 }
 
-export default class EditorFormView {
-  constructor({point, offers, checkedOffers, destinations}){
-    this.point = point;
-    this.offers = offers;
-    this.checkedOffers = checkedOffers;
-    this.destinations = destinations;
+export default class EditorFormView extends AbstractView {
+  #point = null;
+  #offers = null;
+  #checkedOffers = null;
+  #destinations = null;
+  #handleFormSubmit = null;
+  #handleEditClick = null;
+
+  constructor({point, offers, checkedOffers, destinations, onFormSubmit, onClickCloseEditForm}){
+    super();
+    this.#point = point;
+    this.#offers = offers;
+    this.#checkedOffers = checkedOffers;
+    this.#destinations = destinations;
+    this.#handleFormSubmit = onFormSubmit;
+    this.#handleEditClick = onClickCloseEditForm;
+
+    this.element.querySelector('form').addEventListener('submit',this.#formSubmitHandler);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click',this.#editCloseClickHandler);
   }
 
-  getTemplate() {
-    return createEditorFormTemplate(this.point, this.offers, this.checkedOffers, this.destinations);
+  get template() {
+    return createEditorFormTemplate(this.#point, this.#offers, this.#checkedOffers, this.#destinations);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
+  #formSubmitHandler = (evt) =>{
+    evt.preventDefault();
+    this.#handleFormSubmit();
+  };
 
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
-  }
+  #editCloseClickHandler = (evt) =>{
+    evt.preventDefault();
+    this.#handleEditClick();
+  };
 }
