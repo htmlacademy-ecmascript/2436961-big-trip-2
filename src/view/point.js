@@ -1,7 +1,7 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 import {humanizePointDate, calculatePointDuration} from '../util.js';
 
-function createPointTemplate(point, offers, destination) {
+function createPointTemplate(point, offers, destinations) {
   const {startTime, endTime, isFavorite} = point;
   const startDate = humanizePointDate(startTime, 'MMM D');
   const startСlock = humanizePointDate(startTime, 'HH:mm');
@@ -15,7 +15,7 @@ function createPointTemplate(point, offers, destination) {
                 <div class="event__type">
                   <img class="event__type-icon" width="42" height="42" src="img/icons/${point.type}.png" alt="Event type icon">
                 </div>
-                <h3 class="event__title">${point.type} ${destination.city}</h3>
+                <h3 class="event__title">${point.type} ${destinations.city}</h3>
                 <div class="event__schedule">
                   <p class="event__time">
                     <time class="event__start-time" datetime="2019-03-18T10:30">${startСlock}</time>
@@ -48,25 +48,29 @@ function createPointTemplate(point, offers, destination) {
             </li>`);
 }
 
-export default class PointView {
-  constructor({point, offers, destination}) {
-    this.point = point;
-    this.offers = offers;
-    this.destination = destination;
+export default class PointView extends AbstractView {
+  #point = null;
+  #offers = null;
+  #destinations = null;
+  #handleEditClick = null;
+
+
+  constructor({point, offers, destinations, onEditClick}) {
+    super();
+    this.#point = point;
+    this.#offers = offers;
+    this.#destinations = destinations;
+    this.#handleEditClick = onEditClick;
+
+    this.element.querySelector('.event__rollup-btn').addEventListener('click',this.#editClickHandler);
   }
 
-  getTemplate() {
-    return createPointTemplate(this.point, this.offers, this.destination);
+  get template() {
+    return createPointTemplate(this.#point, this.#offers, this.#destinations);
   }
 
-  getElement() {
-    if(!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
-  }
+  #editClickHandler = (evt) =>{
+    evt.preventDefault();
+    this.#handleEditClick();
+  };
 }

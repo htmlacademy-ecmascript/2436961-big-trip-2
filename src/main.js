@@ -1,7 +1,7 @@
 import TripPresenter from './presenter/trip-presenter.js';
 import PointsModel from './model/point.js';
 import FiltersView from './view/filters.js';
-import {render} from './render.js';
+import {render} from './framework/render.js';
 
 const tripControlFiltersContainer = document.querySelector('.trip-controls__filters');
 render(new FiltersView(), tripControlFiltersContainer);
