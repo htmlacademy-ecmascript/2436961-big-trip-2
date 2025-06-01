@@ -1,3 +1,5 @@
+import { getRandomArrayElement } from '../utils/other.js';
+
 export const mockPoints = [
   {
     id: 'point-1',
@@ -53,3 +55,7 @@ export const mockPoints = [
     isFavorite: false,
   },
 ];
+
+export function getRandomPoint() {
+  return getRandomArrayElement(mockPoints);
+}
