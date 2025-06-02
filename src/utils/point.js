@@ -24,3 +24,16 @@ export function calculatePointDuration(start, end) {
   }
   return durationString;
 }
+
+export function isPlannedPoint(dueDate){
+  return dayjs(dueDate).isAfter(dayjs());
+}
+
+export function isCurrentPoint(timeFrom, timeTo){
+  const now = dayjs();
+  return dayjs(timeFrom).isBefore(now) && dayjs(timeTo).isAfter(now);
+}
+
+export function isPassedPoint(timeTo){
+  return dayjs(timeTo).isBefore(dayjs());
+}
