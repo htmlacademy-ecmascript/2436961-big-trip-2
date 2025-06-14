@@ -10,3 +10,9 @@ export const MessageNoPoint = {
   present: 'There are no present events now',
   past: 'There are no past events now'
 };
+
+export const SortType = {
+  DAY: 'day',
+  TIME: 'time',
+  PRICE: 'price',
+};
