@@ -37,3 +37,17 @@ export function isCurrentPoint(timeFrom, timeTo){
 export function isPassedPoint(timeTo){
   return dayjs(timeTo).isBefore(dayjs());
 }
+
+export function sortByDay(pointA, pointB) {
+  return dayjs(pointA.endTime).diff(dayjs(pointB.startTime));
+}
+
+export function sortByTime(pointA, pointB) {
+  const durationA = dayjs(pointA.endTime).diff(dayjs(pointA.startTime));
+  const durationB = dayjs(pointB.endTime).diff(dayjs(pointB.startTime));
+  return durationB - durationA;
+}
+
+export function sortByPrice(pointA, pointB) {
+  return pointB.price - pointA.price;
+}
