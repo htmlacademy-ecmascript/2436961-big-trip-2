@@ -22,6 +22,7 @@ export default class PointPresenter {
     this.#pointsModel = pointsModel;
     this.#changeModeEdit = changeModeEdit;
     this.#changeFavorite = changeFavorite;
+    window.pointsModel = this.#pointsModel;
   }
 
   init(oneItem) {
@@ -48,6 +49,7 @@ export default class PointPresenter {
       offers: [...this.#pointsModel.getOfferByType(this.#pointItem.type)],
       checkedOffers: [...this.#pointsModel.getOfferById(this.#pointItem.offers,this.#pointItem.type)],
       destinations: this.#pointsModel.getDestinationById(this.#pointItem.destination),
+      allDestinations: this.#pointsModel.destinations,
       onFormSubmit: () => {
         this.#replaceFormToPoint();
       },
@@ -83,6 +85,7 @@ export default class PointPresenter {
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
       evt.preventDefault();
+      this.#pointEditComponent.reset(this.#pointItem);
       this.#replaceFormToPoint();
     }
   };
@@ -103,6 +106,7 @@ export default class PointPresenter {
 
   resetView() {
     if (this.#mode !== Mode.DEFAULT) {
+      this.#pointEditComponent.reset(this.#pointItem);
       this.#replaceFormToPoint();
     }
   }

@@ -1,46 +1,46 @@
 export const mockDestinationPoints = [
   {
     id: 'destination-1',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. ',
+    description: 'Paris ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. ',
     city: 'Paris',
     pictures: [
-      {src: 'https://loremflickr.com/248/152?random=1'
+      {src: 'img/photos/1.jpg'
       }
     ]
   },
   {
     id: 'destination-2',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. ',
+    description: 'Berlin ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. ',
     city: 'Berlin',
     pictures: [
-      {src: 'https://loremflickr.com/248/152?random=2'
+      {src: 'img/photos/2.jpg'
       }
     ]
   },
   {
     id: 'destination-3',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. ',
+    description: 'Prague ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. ',
     city: 'Prague',
     pictures: [
-      {src: 'https://loremflickr.com/248/152?random=3'
+      {src: 'img/photos/3.jpg'
       }
     ]
   },
   {
     id: 'destination-4',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. ',
+    description: 'Rome ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. ',
     city: 'Rome',
     pictures: [
-      {src: 'https://loremflickr.com/248/152?random=4'
+      {src: 'img/photos/4.jpg'
       }
     ]
   },
   {
     id: 'destination-5',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. ',
+    description: 'Barcelona ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. ',
     city: 'Barcelona',
     pictures: [
-      {src: 'https://loremflickr.com/248/152?random=5'
+      {src: 'img/photos/5.jpg'
       }
     ]
   }

@@ -112,4 +112,8 @@ export default class ListPointPresenter {
     );
     this.#pointsPresenters.get(updatedPoint.id).init(updatedPoint);
   };
+
+  resetView() {
+    this.#pointsPresenters.forEach((presenter) => presenter.resetView());
+  }
 }
