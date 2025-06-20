@@ -136,6 +136,12 @@ export default class EditorFormView extends AbstractStatefulView {
     );
   }
 
+  static parsePointToState = ({point}) => ({...point});
+
+  static parseStateToPoint = (state) => ({...state.point});
+
+  reset = (point) => this.updateElement(EditorFormView.parsePointToState({point}));
+
   removeElement() {
     super.removeElement();
 
@@ -150,51 +156,13 @@ export default class EditorFormView extends AbstractStatefulView {
     }
   }
 
-  #setDatepickers = () => {
-    const [dateFromElement, dateToElement] = this.element.querySelectorAll('.event__input--time');
-    const dateFormatConfig = {
-      dateFormat: 'd/m/y H:i',
-      enableTime: true,
-      Locale: {firstDay0fWeek: 1},
-      'time_24hr': true
-    };
-
-    this.#datepickerFrom = flatpickr(
-      dateFromElement,
-      {
-        ...dateFormatConfig,
-        defaultDate: this._state.dateFrom,
-        onClose: this.#dateFromChangeHandler,
-        maxDate: this._state.dateTo
-      }
-    );
-
-    this.#datepickerTo = flatpickr(
-      dateToElement,
-      {
-        ...dateFormatConfig,
-        defaultDate: this._state.dateTo,
-        onClose: this.#dateToChangeHandler,
-        minDate: this._state.dateFrom
-      }
-    );
+  _restoreHandlers = () => {
+    this.element.querySelector('form').addEventListener('submit',this.#formSubmitHandler);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click',this.#editCloseClickHandler);
+    this.element.querySelectorAll('.event__type-input').forEach((element) => element.addEventListener('change', this.#changeTypeHandler));
+    this.element.querySelector('.event__input--destination').addEventListener('change', this.#changeDestinationHandler);
+    this.#setDatepickers();
   };
-
-  #dateFromChangeHandler = ([userDate]) => {
-    this._setState({ ...this._state.point, dateFrom: userDate});
-    this.#datepickerTo.set('minDate', this._state.dateFrom);
-  };
-
-  #dateToChangeHandler = ([userDate]) => {
-    this._setState({ ...this._state.point, dateTo: userDate});
-    this.#datepickerFrom.set('maxDate', this._state.dateTo);
-  };
-
-  static parsePointToState = ({point}) => ({...point});
-
-  static parseStateToPoint = (state) => ({...state.point});
-
-  reset = (point) => this.updateElement(EditorFormView.parsePointToState({point}));
 
   #formSubmitHandler = (evt) =>{
     evt.preventDefault();
@@ -234,11 +202,42 @@ export default class EditorFormView extends AbstractStatefulView {
     });
   };
 
-  _restoreHandlers = () => {
-    this.element.querySelector('form').addEventListener('submit',this.#formSubmitHandler);
-    this.element.querySelector('.event__rollup-btn').addEventListener('click',this.#editCloseClickHandler);
-    this.element.querySelectorAll('.event__type-input').forEach((element) => element.addEventListener('change', this.#changeTypeHandler));
-    this.element.querySelector('.event__input--destination').addEventListener('change', this.#changeDestinationHandler);
-    this.#setDatepickers();
+  #setDatepickers = () => {
+    const [dateFromElement, dateToElement] = this.element.querySelectorAll('.event__input--time');
+    const dateFormatConfig = {
+      dateFormat: 'd/m/y H:i',
+      enableTime: true,
+      'time_24hr': true
+    };
+
+    this.#datepickerFrom = flatpickr(
+      dateFromElement,
+      {
+        ...dateFormatConfig,
+        defaultDate: this._state.point.startTime,
+        onClose: this.#dateFromChangeHandler,
+        maxDate: this._state.point.endTime
+      }
+    );
+
+    this.#datepickerTo = flatpickr(
+      dateToElement,
+      {
+        ...dateFormatConfig,
+        defaultDate: this._state.point.endTime,
+        onClose: this.#dateToChangeHandler,
+        minDate: this._state.point.startTime
+      }
+    );
+  };
+
+  #dateFromChangeHandler = ([userDate]) => {
+    this._setState({ ...this._state.point, startTime: userDate});
+    this.#datepickerTo.set('minDate', this._state.point.startTime);
+  };
+
+  #dateToChangeHandler = ([userDate]) => {
+    this._setState({ ...this._state.point, endTime: userDate});
+    this.#datepickerFrom.set('maxDate', this._state.point.endTime);
   };
 }
