@@ -31,6 +31,11 @@ function createEventTypeItemsTemplate(currentType) {
 }
 
 function createAddPointFormTemplate(point, offers, checkedOffers, destinations, allDestinations) {
+  const hasOffers = offers && offers.length > 0;
+  const hasDescription = destinations && destinations.description;
+  const hasPictures = destinations && destinations.pictures && destinations.pictures.length > 0;
+  const hasDestinationDetails = hasDescription || hasPictures;
+
   return (`<li class="trip-events__item">
               <form class="event event--edit" action="#" method="post">
                 <header class="event__header">
@@ -61,10 +66,10 @@ function createAddPointFormTemplate(point, offers, checkedOffers, destinations, 
 
                   <div class="event__field-group  event__field-group--time">
                     <label class="visually-hidden" for="event-start-time-1">From</label>
-                    <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${humanizePointDate(point.startTime, ' DD/MM/YY HH:mm')}">
+                    <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${humanizePointDate(point.startTime, 'DD/MM/YY HH:mm')}">
                     —
                     <label class="visually-hidden" for="event-end-time-1">To</label>
-                    <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${humanizePointDate(point.endTime, ' DD/MM/YY HH:mm')}">
+                    <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${humanizePointDate(point.endTime, 'DD/MM/YY HH:mm')}">
                   </div>
 
                   <div class="event__field-group  event__field-group--price">
@@ -79,23 +84,28 @@ function createAddPointFormTemplate(point, offers, checkedOffers, destinations, 
                   <button class="event__reset-btn" type="reset">Cancel</button>
                 </header>
                 <section class="event__details">
+                  ${hasOffers ? `
                   <section class="event__section  event__section--offers">
                     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-
                     <div class="event__available-offers">
                     ${offers.map((offer)=>createOffersOfPointTemplate(offer, checkedOffers)).join(' ')}
                     </div>
                   </section>
-
+                  ` : ''}
+                  
+                  ${hasDestinationDetails ? `
                   <section class="event__section  event__section--destination">
                     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-                    <p class="event__destination-description">${destinations?.description ?? ''}</p>
+                    ${hasDescription ? `<p class="event__destination-description">${destinations.description}</p>` : ''}
+                    ${hasPictures ? `
                     <div class="event__photos-container">
                       <div class="event__photos-tape">
-                        ${destinations?.pictures ? destinations.pictures.map((item) => `<img class="event__photo" src=${item.src} alt="Event photo">`).join('') : ''}
+                        ${destinations.pictures.map((item) => `<img class="event__photo" src=${item.src} alt="Event photo">`).join('')}
                       </div>
                     </div>
+                    ` : ''}
                   </section>
+                  ` : ''}
                 </section>
               </form>
             </li>`);
@@ -259,7 +269,6 @@ export default class AddPointFormView extends AbstractStatefulView {
         ...dateFormatConfig,
         defaultDate: this._state.point.startTime,
         onClose: this.#dateFromChangeHandler,
-        maxDate: this._state.point.endTime
       }
     );
 
@@ -269,7 +278,6 @@ export default class AddPointFormView extends AbstractStatefulView {
         ...dateFormatConfig,
         defaultDate: this._state.point.endTime,
         onClose: this.#dateToChangeHandler,
-        minDate: this._state.point.startTime
       }
     );
   };

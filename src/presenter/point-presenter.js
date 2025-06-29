@@ -96,8 +96,12 @@ export default class PointPresenter {
   }
 
   destroy() {
-    remove(this.#pointComponent);
-    remove(this.#pointEditComponent);
+    if (this.#pointComponent) {
+      remove(this.#pointComponent);
+    }
+    if (this.#pointEditComponent) {
+      remove(this.#pointEditComponent);
+    }
     if (this.#addPointComponent !== null) {
       remove(this.#addPointComponent);
     }
@@ -159,6 +163,9 @@ export default class PointPresenter {
     if (this.#addPointComponent) {
       remove(this.#addPointComponent);
       this.#addPointComponent = null;
+      if (this.#newEventButton) {
+        this.#newEventButton.disabled = false;
+      }
     } else {
       replace(this.#pointComponent, this.#pointEditComponent);
     }
@@ -168,8 +175,13 @@ export default class PointPresenter {
 
   resetView() {
     if (this.#mode !== Mode.DEFAULT) {
-      this.#pointEditComponent.reset(this.#pointItem);
+      if (this.#pointEditComponent) {
+        this.#pointEditComponent.reset(this.#pointItem);
+      }
       this.#replaceFormToPoint();
+      if (this.#newEventButton) {
+        this.#newEventButton.disabled = false;
+      }
     }
   }
 
@@ -192,6 +204,9 @@ export default class PointPresenter {
       this.#mode = Mode.DEFAULT;
       remove(this.#addPointComponent);
       this.#addPointComponent = null;
+      if (this.#newEventButton) {
+        this.#newEventButton.disabled = false;
+      }
     } else {
       this.#onDataChange(
         UserAction.UPDATE_POINT,
@@ -208,24 +223,12 @@ export default class PointPresenter {
       UpdateType.MINOR,
       this.#pointItem,
     );
-    if (this.#pointEditComponent !== null) {
+    if (this.#pointEditComponent) {
       remove(this.#pointEditComponent);
       this.#pointEditComponent = null;
       document.removeEventListener('keydown', this.#escKeyDownHandler);
     }
     this.#mode = Mode.DEFAULT;
-  };
-
-  #handleDeleteForm = (point) => {
-    if (this.#mode === Mode.NEW) {
-      this.#handleCancelCreate();
-    } else {
-      this.#onDataChange(
-        UserAction.DELETE_POINT,
-        UpdateType.MINOR,
-        point,
-      );
-    }
   };
 
   #handleCancelCreate = () => {

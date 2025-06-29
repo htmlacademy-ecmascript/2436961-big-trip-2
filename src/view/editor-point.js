@@ -32,6 +32,11 @@ function createEventTypeItemsTemplate(currentType) {
 }
 
 function createEditorFormTemplate(point, offers, checkedOffers, destinations, allDestinations) {
+  const hasOffers = offers && offers.length > 0;
+  const hasDescription = destinations && destinations.description;
+  const hasPictures = destinations && destinations.pictures && destinations.pictures.length > 0;
+  const hasDestinationDetails = hasDescription || hasPictures;
+
   return (`<li class="trip-events__item">
               <form class="event event--edit" action="#" method="post">
                 <header class="event__header">
@@ -83,6 +88,7 @@ function createEditorFormTemplate(point, offers, checkedOffers, destinations, al
                   </button>
                 </header>
                 <section class="event__details">
+                  ${hasOffers ? `
                   <section class="event__section  event__section--offers">
                     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
@@ -90,16 +96,21 @@ function createEditorFormTemplate(point, offers, checkedOffers, destinations, al
                     ${offers.map((offer)=>createOffersOfPointTemplate(offer, checkedOffers)).join(' ')}
                     </div>
                   </section>
+                  ` : ''}
 
+                  ${hasDestinationDetails ? `
                   <section class="event__section  event__section--destination">
                     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-                    <p class="event__destination-description">${destinations.description}</p>
+                    ${hasDescription ? `<p class="event__destination-description">${destinations.description}</p>` : ''}
+                    ${hasPictures ? `
                     <div class="event__photos-container">
                       <div class="event__photos-tape">
                         ${destinations.pictures.map((item) => `<img class="event__photo" src=${item.src} alt="Event photo">`).join('')}
                       </div>
                     </div>
+                    ` : ''}
                   </section>
+                  ` : ''}
                 </section>
               </form>
             </li>`);
@@ -277,9 +288,9 @@ export default class EditorFormView extends AbstractStatefulView {
       dateFromElement,
       {
         ...dateFormatConfig,
-        defaultDate: this._state.point.startTime,
+        defaultDate: new Date(this._state.point.startTime),
         onClose: this.#dateFromChangeHandler,
-        maxDate: this._state.point.endTime
+        maxDate: new Date(this._state.point.endTime)
       }
     );
 
@@ -287,9 +298,9 @@ export default class EditorFormView extends AbstractStatefulView {
       dateToElement,
       {
         ...dateFormatConfig,
-        defaultDate: this._state.point.endTime,
+        defaultDate: new Date(this._state.point.endTime),
         onClose: this.#dateToChangeHandler,
-        minDate: this._state.point.startTime
+        minDate: new Date(this._state.point.startTime)
       }
     );
   };

@@ -49,10 +49,7 @@ export const mockPoints = [
     startTime: '2025-07-05T17:30:00.000+03:00',
     endTime: '2025-07-05T18:30:00.000+03:00',
     price: 250,
-    offers: [
-      'offer-drive-1',
-      'offer-drive-2'
-    ],
+    offers: [],
     isFavorite: false,
   },
 ];
