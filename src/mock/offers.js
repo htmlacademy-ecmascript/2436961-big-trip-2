@@ -61,18 +61,7 @@ export const mockOffersPoints = [
   },
   {
     type: 'drive',
-    offers: [
-      {
-        id: 'offer-drive-1',
-        title: 'GPS',
-        price: 5
-      },
-      {
-        id: 'offer-drive-2',
-        title: 'cruise control',
-        price: 10
-      }
-    ]
+    offers: []
   },
   {
     type: 'flight',
