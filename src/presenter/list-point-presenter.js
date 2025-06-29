@@ -94,6 +94,7 @@ export default class ListPointPresenter {
 
     if (!this.points.length && !this.#newEventButtonComponent.disabled) {
       this.#noPointComponent = new NoPointView(this.#filterType);
+      remove(this.#sortComponent);
       render(this.#noPointComponent, this.#pointListComponent.element);
     }
   }
