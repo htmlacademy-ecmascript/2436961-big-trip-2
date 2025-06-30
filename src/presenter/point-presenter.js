@@ -1,28 +1,31 @@
-import EditorFormView from '../view/editor-point.js';
 import PointView from '../view/point.js';
-import {render, replace, remove} from '../framework/render.js';
-
-const Mode = {
-  DEFAULT: 'DEFAULT',
-  EDITING: 'EDITING',
-};
+import EditorFormView from '../view/editor-point.js';
+import AddPointFormView from '../view/add-point.js';
+import {render, replace, remove, RenderPosition} from '../framework/render.js';
+import {UpdateType, UserAction, Mode, BLANK_POINT} from '../const.js';
+import {nanoid} from 'nanoid';
 
 export default class PointPresenter {
   #pointItem = null;
   #pointComponent = null;
   #pointEditComponent = null;
+  #addPointComponent = null;
   #pointListComponent = null;
   #pointsModel = null;
+  #onDataChange = null;
   #changeModeEdit = null;
   #changeFavorite = null;
+  #newEventButton = null;
   #mode = Mode.DEFAULT;
 
-  constructor ({pointListComponent, pointsModel, changeModeEdit, changeFavorite}) {
+  constructor ({pointListComponent, pointsModel, onDataChange, changeModeEdit, changeFavorite, newEventButton}) {
     this.#pointListComponent = pointListComponent;
     this.#pointsModel = pointsModel;
+    this.#newEventButton = newEventButton;
+    window.pointsModel = this.#pointsModel;
+    this.#onDataChange = onDataChange;
     this.#changeModeEdit = changeModeEdit;
     this.#changeFavorite = changeFavorite;
-    window.pointsModel = this.#pointsModel;
   }
 
   init(oneItem) {
@@ -40,6 +43,7 @@ export default class PointPresenter {
       destinations: this.#pointsModel.getDestinationById(this.#pointItem.destination),
       onEditClick: () => {
         this.#replacePointToForm();
+        document.addEventListener('keydown', this.#escKeyDownHandler);
       },
       onFavoriteClick: this.#handleFavoriteClick
     });
@@ -50,11 +54,20 @@ export default class PointPresenter {
       checkedOffers: [...this.#pointsModel.getOfferById(this.#pointItem.offers,this.#pointItem.type)],
       destinations: this.#pointsModel.getDestinationById(this.#pointItem.destination),
       allDestinations: this.#pointsModel.destinations,
-      onFormSubmit: () => {
+      onFormSubmit: this.#handleFormSubmit,
+      onClickCloseEditForm:() => {
         this.#replaceFormToPoint();
       },
-      onClickCloseEditForm:()=>{
-        this.#replaceFormToPoint();
+      onDeleteClick: () => {
+        if (this.#mode === Mode.EDITING) {
+          this.#handleDeleteEdit();
+        } else {
+          this.#onDataChange(
+            UserAction.DELETE_POINT,
+            UpdateType.MINOR,
+            this.#pointItem,
+          );
+        }
       }
     });
 
@@ -77,16 +90,65 @@ export default class PointPresenter {
     remove(prevPointEditComponent);
   }
 
-  destroy() {
-    remove(this.#pointComponent);
-    remove(this.#pointEditComponent);
+  createPoint() {
+    this.#mode = Mode.EDITING;
+    this.#createPoint();
   }
+
+  destroy() {
+    if (this.#pointComponent) {
+      remove(this.#pointComponent);
+    }
+    if (this.#pointEditComponent) {
+      remove(this.#pointEditComponent);
+    }
+    if (this.#addPointComponent !== null) {
+      remove(this.#addPointComponent);
+    }
+  }
+
+  #createPoint = () => {
+    if (this.#addPointComponent !== null) {
+      return;
+    }
+    const point = BLANK_POINT;
+    this.#pointItem = point;
+
+    this.#escKeyDownHandler = (evt) => {
+      if (evt.key === 'Escape') {
+        evt.preventDefault();
+        this.#handleCancelCreate();
+      }
+    };
+
+    this.#addPointComponent = new AddPointFormView({
+      allDestinations: this.#pointsModel.destinations,
+      allOffers: this.#pointsModel,
+      onFormSubmit: this.#handleFormSubmit,
+      onCancel: this.#handleCancelCreate
+    });
+
+    document.addEventListener('keydown', this.#escKeyDownHandler);
+
+    render(this.#addPointComponent, this.#pointListComponent, RenderPosition.AFTERBEGIN);
+    this.#mode = Mode.NEW;
+    return point;
+  };
 
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
       evt.preventDefault();
-      this.#pointEditComponent.reset(this.#pointItem);
-      this.#replaceFormToPoint();
+      if (this.#addPointComponent) {
+        remove(this.#addPointComponent);
+        this.#addPointComponent = null;
+        if (this.#newEventButton) {
+          this.#newEventButton.disabled = false;
+        }
+      } else {
+        this.#pointEditComponent.reset(this.#pointItem);
+        this.#replaceFormToPoint();
+      }
+      document.removeEventListener('keydown', this.#escKeyDownHandler);
     }
   };
 
@@ -95,23 +157,89 @@ export default class PointPresenter {
     replace(this.#pointEditComponent, this.#pointComponent);
     this.#mode = Mode.EDITING;
     document.addEventListener('keydown', this.#escKeyDownHandler);
-
   }
 
   #replaceFormToPoint() {
-    replace(this.#pointComponent, this.#pointEditComponent);
+    if (this.#addPointComponent) {
+      remove(this.#addPointComponent);
+      this.#addPointComponent = null;
+      if (this.#newEventButton) {
+        this.#newEventButton.disabled = false;
+      }
+    } else {
+      replace(this.#pointComponent, this.#pointEditComponent);
+    }
     this.#mode = Mode.DEFAULT;
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
   resetView() {
     if (this.#mode !== Mode.DEFAULT) {
-      this.#pointEditComponent.reset(this.#pointItem);
+      if (this.#pointEditComponent) {
+        this.#pointEditComponent.reset(this.#pointItem);
+      }
       this.#replaceFormToPoint();
+      if (this.#newEventButton) {
+        this.#newEventButton.disabled = false;
+      }
     }
   }
 
   #handleFavoriteClick = () => {
     this.#changeFavorite({...this.#pointItem, isFavorite: !this.#pointItem.isFavorite});
+    this.#onDataChange(
+      UserAction.UPDATE_POINT,
+      UpdateType.PATCH,
+      this.#pointItem
+    );
+  };
+
+  #handleFormSubmit = (update) => {
+    if (this.#mode === Mode.NEW) {
+      this.#onDataChange(
+        UserAction.ADD_POINT,
+        UpdateType.MINOR,
+        {id: nanoid(), ...update},
+      );
+      this.#mode = Mode.DEFAULT;
+      remove(this.#addPointComponent);
+      this.#addPointComponent = null;
+      if (this.#newEventButton) {
+        this.#newEventButton.disabled = false;
+      }
+    } else {
+      this.#onDataChange(
+        UserAction.UPDATE_POINT,
+        UpdateType.MINOR,
+        update,
+      );
+      this.#replaceFormToPoint();
+    }
+  };
+
+  #handleDeleteEdit = () => {
+    this.#onDataChange(
+      UserAction.DELETE_POINT,
+      UpdateType.MINOR,
+      this.#pointItem,
+    );
+    if (this.#pointEditComponent) {
+      remove(this.#pointEditComponent);
+      this.#pointEditComponent = null;
+      document.removeEventListener('keydown', this.#escKeyDownHandler);
+    }
+    this.#mode = Mode.DEFAULT;
+  };
+
+  #handleCancelCreate = () => {
+    if (this.#addPointComponent !== null) {
+      remove(this.#addPointComponent);
+      this.#addPointComponent = null;
+      document.removeEventListener('keydown', this.#escKeyDownHandler);
+    }
+    this.#mode = Mode.DEFAULT;
+    if (this.#newEventButton) {
+      this.#newEventButton.disabled = false;
+    }
   };
 }

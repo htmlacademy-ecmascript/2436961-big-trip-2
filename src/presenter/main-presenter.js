@@ -1,17 +1,15 @@
-import FiltersView from '../view/filters.js';
-import {render} from '../framework/render.js';
-import {generateFilter} from '../mock/filter.js';
 import ListPointPresenter from './list-point-presenter.js';
 
 export default class MainPresenter {
-  #filtersComponent = null;
   #eventsContainer = null;
   #pointsModel = null;
+  #filterModel = null;
   #listPointPresenter = null;
 
-  constructor(eventsContainer, pointsModel) {
+  constructor(eventsContainer, pointsModel, filterModel) {
     this.#eventsContainer = eventsContainer;
     this.#pointsModel = pointsModel;
+    this.#filterModel = filterModel;
   }
 
   init() {
@@ -19,21 +17,14 @@ export default class MainPresenter {
   }
 
   #renderBoard() {
-    this.#renderFiltersComponent();
     this.#renderListPointPresenter();
-  }
-
-  #renderFiltersComponent() {
-    this.filters = generateFilter(this.#pointsModel.points);
-    this.#filtersComponent = new FiltersView({ filters: this.filters});
-    const tripControlFiltersContainer = document.querySelector('.trip-controls__filters');
-    render(this.#filtersComponent, tripControlFiltersContainer);
   }
 
   #renderListPointPresenter() {
     this.#listPointPresenter = new ListPointPresenter(
       this.#eventsContainer,
       this.#pointsModel,
+      this.#filterModel,
       this.#handleModeChange
     );
     this.#listPointPresenter.init();
