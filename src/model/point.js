@@ -1,13 +1,16 @@
-import {getRandomPoint} from '../mock/points.js';
-import {mockDestinationPoints} from '../mock/destinations.js';
-import {mockOffersPoints} from '../mock/offers.js';
 import Observable from '../framework/observable.js';
+import {UpdateType} from '../const.js';
 
-const POINTS_COUNT = 3;
 export default class PointsModel extends Observable {
-  #points = Array.from({length: POINTS_COUNT}, getRandomPoint);
-  #offers = mockOffersPoints;
-  #destinations = mockDestinationPoints;
+  #points = [];
+  #offers = [];
+  #destinations = [];
+  #pointsApiService = null;
+
+  constructor({pointsApiService}) {
+    super();
+    this.#pointsApiService = pointsApiService;
+  }
 
   get points() {
     return this.#points;
@@ -37,6 +40,21 @@ export default class PointsModel extends Observable {
     return allDestination.find((item) => item.id === id);
   }
 
+  async init() {
+    try {
+      const points = await this.#pointsApiService.points;
+      this.#points = points.map(this.#adaptToClient);
+      this.#destinations = await this.#pointsApiService.destinations;
+      this.#offers = await this.#pointsApiService.offers;
+      this._notify(UpdateType.INIT);
+    } catch(err) {
+      this.#points = [];
+      this.#destinations = [];
+      this.#offers = [];
+      throw new Error('Can\'t get data from server');
+    }
+  }
+
   addPoint(updateType, update) {
     this.#points = [
       update,
@@ -58,16 +76,38 @@ export default class PointsModel extends Observable {
     }
   }
 
-  updatePoint(updateType, update) {
+  async updatePoint(updateType, update) {
     const index = this.#points.findIndex((point) => point.id === update.id);
-    if (index !== -1) {
+
+    try {
+      const response = await this.#pointsApiService.updatePoint(update);
+      const updatedPoint = this.#adaptToClient(response);
+
       this.#points = [
         ...this.#points.slice(0, index),
-        update,
+        updatedPoint,
         ...this.#points.slice(index + 1)
       ];
 
-      this._notify(updateType, update);
+      this._notify(updateType, updatedPoint);
+    } catch(err) {
+      throw new Error('Can\'t update point');
     }
+  }
+
+  #adaptToClient(point) {
+    const adaptedPoint = {...point,
+      price: point['base_price'],
+      startTime: point['date_from'] !== null ? new Date(point['date_from']) : point['date_from'],
+      endTime: point['date_to'] !== null ? new Date(point['date_to']) : point['date_to'],
+      isFavorite: point['is_favorite'] === true,
+    };
+
+    delete adaptedPoint['base_price'];
+    delete adaptedPoint['start_date'];
+    delete adaptedPoint['end_date'];
+    delete adaptedPoint['is_favorite'];
+
+    return adaptedPoint;
   }
 }

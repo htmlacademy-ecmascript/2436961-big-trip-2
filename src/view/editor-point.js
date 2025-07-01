@@ -59,9 +59,9 @@ function createEditorFormTemplate(point, offers, checkedOffers, destinations, al
                     <label class="event__label  event__type-output" for="event-destination-${destinations.id}">
                       ${point.type}
                     </label>
-                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinations.city}" list="destination-list-${destinations.id}">
+                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinations.name}" list="destination-list-${destinations.id}">
                     <datalist id="destination-list-${destinations.id}">
-                      ${allDestinations.map((item) => `<option value="${he.encode(item.city)}"></option>`).join('')}
+                      ${allDestinations.map((item) => `<option value="${he.encode(item.name)}"></option>`).join('')}
                     </datalist>
                   </div>
 
@@ -225,10 +225,10 @@ export default class EditorFormView extends AbstractStatefulView {
   #changeDestinationHandler = (evt) => {
     evt.preventDefault();
     const newCity = evt.target.value;
-    const newDestination = this.#allDestinations.find((item) => item.city === newCity);
+    const newDestination = this.#allDestinations.find((item) => item.name === newCity);
 
     if (!newDestination) {
-      evt.target.value = this._state.destinations?.city || '';
+      evt.target.value = this._state.destinations?.name || '';
       return;
     }
 
