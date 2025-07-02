@@ -1,6 +1,7 @@
 import SortView from '../view/sort.js';
 import PointsListView from '../view/list-points.js';
 import NoPointView from '../view/no-point.js';
+import LoadingView from '../view/loading.js';
 import PointPresenter from './point-presenter.js';
 import {render, remove} from '../framework/render.js';
 import {SortType, UpdateType, UserAction, FilterType} from '../const.js';
@@ -13,12 +14,14 @@ export default class ListPointPresenter {
   #pointsPresenters = new Map();
   #newEventButtonComponent = null;
   #noPointComponent = null;
+  #loadingComponent = null;
   #eventsContainer = null;
   #pointsModel = null;
   #filterModel = null;
   #onModeChange = null;
   #filterType = FilterType.EVERYTHING;
   #currentSortType = SortType.DAY;
+  #isLoading = true;
 
   constructor(eventsContainer, pointsModel, filterModel, onModeChange) {
     this.#eventsContainer = eventsContainer;
@@ -48,10 +51,16 @@ export default class ListPointPresenter {
 
   init() {
     this.#renderNewEventButtonComponent();
-    this.#renderSortComponent();
+    if (this.#newEventButtonComponent) {
+      this.#newEventButtonComponent.disabled = true;
+    }
+    if (!this.#isLoading) {
+      this.#renderSortComponent();
+    }
     this.#renderPointListComponent();
     this.#renderListPoints();
     this.#renderNoPoint();
+    this.#renderLoading();
   }
 
   #renderSortComponent() {
@@ -92,10 +101,17 @@ export default class ListPointPresenter {
       this.#noPointComponent = null;
     }
 
-    if (!this.points.length && !this.#newEventButtonComponent.disabled) {
+    if (!this.#isLoading && !this.points.length && !this.#newEventButtonComponent.disabled) {
       this.#noPointComponent = new NoPointView(this.#filterType);
       remove(this.#sortComponent);
       render(this.#noPointComponent, this.#pointListComponent.element);
+    }
+  }
+
+  #renderLoading() {
+    if (this.#isLoading) {
+      this.#loadingComponent = new LoadingView();
+      render(this.#loadingComponent, this.#eventsContainer);
     }
   }
 
@@ -132,6 +148,20 @@ export default class ListPointPresenter {
         this.#renderListPoints();
         this.#renderNoPoint();
         break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        this.#clearBoard();
+        if (this.#newEventButtonComponent) {
+          this.#newEventButtonComponent.disabled = false;
+        }
+        if (this.points.length === 0) {
+          this.#renderNoPoint();
+        } else {
+          this.#renderSortComponent();
+          this.#renderPointListComponent();
+          this.#renderListPoints();
+        }
+        break;
     }
   };
 
@@ -140,6 +170,7 @@ export default class ListPointPresenter {
     this.#pointsPresenters.clear();
     remove(this.#sortComponent);
     remove(this.#pointListComponent);
+    remove(this.#loadingComponent);
 
     if (this.#noPointComponent) {
       remove(this.#noPointComponent);
