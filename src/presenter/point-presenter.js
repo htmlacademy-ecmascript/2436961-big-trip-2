@@ -3,7 +3,6 @@ import EditorFormView from '../view/editor-point.js';
 import AddPointFormView from '../view/add-point.js';
 import {render, replace, remove, RenderPosition} from '../framework/render.js';
 import {UpdateType, UserAction, Mode, BLANK_POINT} from '../const.js';
-import {nanoid} from 'nanoid';
 
 export default class PointPresenter {
   #pointItem = null;
@@ -84,6 +83,7 @@ export default class PointPresenter {
 
     if (this.#mode === Mode.EDITING) {
       replace(this.#pointEditComponent, prevPointEditComponent);
+      this.#mode = Mode.DEFAULT;
     }
 
     remove(prevPointComponent);
@@ -152,6 +152,49 @@ export default class PointPresenter {
     }
   };
 
+  setSaving() {
+    if (this.#mode === Mode.EDITING) {
+      this.#pointEditComponent.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  }
+
+  setDeleting() {
+    if (this.#mode === Mode.EDITING) {
+      this.#pointEditComponent.updateElement({
+        isDisabled: true,
+        isDeleting: true,
+      });
+    }
+  }
+
+  setAborting() {
+    if (this.#addPointComponent) {
+      const resetCreateFormState = () => {
+        this.#addPointComponent.updateElement({
+          isDisabled: false,
+          isSaving: false,
+        });
+      };
+      this.#addPointComponent.shake(resetCreateFormState);
+    } else if (this.#pointEditComponent) {
+      const resetFormState = () => {
+        this.#pointEditComponent.updateElement({
+          isDisabled: false,
+          isSaving: false,
+          isDeleting: false,
+        });
+      };
+      this.#pointEditComponent.shake(resetFormState);
+    } else if (this.#mode === Mode.DEFAULT) {
+      if (this.#pointComponent) {
+        this.#pointComponent.shake();
+      }
+    }
+  }
+
   #replacePointToForm() {
     this.#changeModeEdit();
     replace(this.#pointEditComponent, this.#pointComponent);
@@ -196,24 +239,18 @@ export default class PointPresenter {
 
   #handleFormSubmit = (update) => {
     if (this.#mode === Mode.NEW) {
+      this.#addPointComponent.setSaving();
       this.#onDataChange(
         UserAction.ADD_POINT,
         UpdateType.MINOR,
-        {id: nanoid(), ...update},
+        update
       );
-      this.#mode = Mode.DEFAULT;
-      remove(this.#addPointComponent);
-      this.#addPointComponent = null;
-      if (this.#newEventButton) {
-        this.#newEventButton.disabled = false;
-      }
     } else {
       this.#onDataChange(
         UserAction.UPDATE_POINT,
         UpdateType.MINOR,
         update,
       );
-      this.#replaceFormToPoint();
     }
   };
 
@@ -223,12 +260,6 @@ export default class PointPresenter {
       UpdateType.MINOR,
       this.#pointItem,
     );
-    if (this.#pointEditComponent) {
-      remove(this.#pointEditComponent);
-      this.#pointEditComponent = null;
-      document.removeEventListener('keydown', this.#escKeyDownHandler);
-    }
-    this.#mode = Mode.DEFAULT;
   };
 
   #handleCancelCreate = () => {

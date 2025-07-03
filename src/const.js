@@ -1,5 +1,3 @@
-import {nanoid} from 'nanoid';
-
 export const FilterType = {
   EVERYTHING: 'everything',
   FUTURE: 'future',
@@ -51,7 +49,6 @@ export const BLANK_POINT = {
   isFavorite: false,
   offers: [],
   type: 'taxi',
-  id: nanoid(),
 };
 
 export const Mode = {
