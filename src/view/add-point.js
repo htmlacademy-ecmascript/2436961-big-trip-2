@@ -30,7 +30,7 @@ function createEventTypeItemsTemplate(currentType) {
   `).join('');
 }
 
-function createAddPointFormTemplate(point, offers, checkedOffers, destinations, allDestinations) {
+function createAddPointFormTemplate(point, offers, checkedOffers, destinations, allDestinations, isDisabled, isSaving) {
   const hasOffers = offers && offers.length > 0;
   const hasDescription = destinations && destinations.description;
   const hasPictures = destinations && destinations.pictures && destinations.pictures.length > 0;
@@ -44,7 +44,7 @@ function createAddPointFormTemplate(point, offers, checkedOffers, destinations, 
                       <span class="visually-hidden">Choose event type</span>
                       <img class="event__type-icon" width="17" height="17" src="img/icons/${point.type}.png" alt="Event type icon">
                     </label>
-                    <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${destinations?.id ?? ''}" type="checkbox">
+                    <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${destinations?.id ?? ''}" type="checkbox" ${isDisabled ? 'disabled' : ''}>
 
                     <div class="event__type-list">
                       <fieldset class="event__type-group">
@@ -58,7 +58,7 @@ function createAddPointFormTemplate(point, offers, checkedOffers, destinations, 
                     <label class="event__label  event__type-output" for="event-destination-${destinations?.id ?? ''}">
                       ${point.type}
                     </label>
-                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinations?.name ?? ''}" list="destination-list-${destinations?.id ?? ''}">
+                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinations?.name ?? ''}" list="destination-list-${destinations?.id ?? ''}" ${isDisabled ? 'disabled' : ''}>
                     <datalist id="destination-list-${destinations?.id ?? ''}">
                       ${allDestinations ? allDestinations.map((item) => `<option value="${he.encode(item.name)}"></option>`).join('') : ''}
                     </datalist>
@@ -66,10 +66,10 @@ function createAddPointFormTemplate(point, offers, checkedOffers, destinations, 
 
                   <div class="event__field-group  event__field-group--time">
                     <label class="visually-hidden" for="event-start-time-1">From</label>
-                    <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${humanizePointDate(point.startTime, 'DD/MM/YY HH:mm')}">
+                    <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${humanizePointDate(point.startTime, 'DD/MM/YY HH:mm')}" ${isDisabled ? 'disabled' : ''}>
                     —
                     <label class="visually-hidden" for="event-end-time-1">To</label>
-                    <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${humanizePointDate(point.endTime, 'DD/MM/YY HH:mm')}">
+                    <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${humanizePointDate(point.endTime, 'DD/MM/YY HH:mm')}" ${isDisabled ? 'disabled' : ''}>
                   </div>
 
                   <div class="event__field-group  event__field-group--price">
@@ -77,11 +77,11 @@ function createAddPointFormTemplate(point, offers, checkedOffers, destinations, 
                       <span class="visually-hidden">Price</span>
                       €
                     </label>
-                    <input class="event__input  event__input--price" id="event-price-${destinations?.id ?? ''}" type="text" name="event-price" value="${point.price}">
+                    <input class="event__input  event__input--price" id="event-price-${destinations?.id ?? ''}" type="text" name="event-price" value="${point.price}" ${isDisabled ? 'disabled' : ''}>
                   </div>
 
-                  <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-                  <button class="event__reset-btn" type="reset">Cancel</button>
+                  <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : ''}>${isSaving ? 'Saving...' : 'Save'}</button>
+                  <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>Cancel</button>
                 </header>
                 <section class="event__details">
                   ${hasOffers ? `
@@ -132,12 +132,15 @@ export default class AddPointFormView extends AbstractStatefulView {
         destination: '',
         startTime: '',
         endTime: '',
+        isFavorite: false,
         price: 0,
-        offers: []
+        offers: [],
       },
       offers: allOffers.getOfferByType(firstType),
       checkedOffers: [],
       destinations: null,
+      isDisabled: false,
+      isSaving: false
     };
     this._restoreHandlers();
   }
@@ -149,6 +152,8 @@ export default class AddPointFormView extends AbstractStatefulView {
       this._state.checkedOffers,
       this._state.destinations,
       this.#allDestinations,
+      this._state.isDisabled,
+      this._state.isSaving
     );
   }
 
@@ -315,4 +320,21 @@ export default class AddPointFormView extends AbstractStatefulView {
       this.#datepickerFrom.set('maxDate', userDate);
     }
   };
+
+  setSaving() {
+    this.updateElement({
+      isDisabled: true,
+      isSaving: true
+    });
+  }
+
+  setAborting() {
+    const resetFormState = () => {
+      this.updateElement({
+        isDisabled: false,
+        isSaving: false
+      });
+    };
+    this.shake(resetFormState);
+  }
 }

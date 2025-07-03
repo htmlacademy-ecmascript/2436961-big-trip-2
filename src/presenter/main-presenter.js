@@ -1,5 +1,6 @@
 import ListPointPresenter from './list-point-presenter.js';
 
+
 export default class MainPresenter {
   #eventsContainer = null;
   #pointsModel = null;
