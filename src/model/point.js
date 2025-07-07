@@ -51,6 +51,7 @@ export default class PointsModel extends Observable {
       this.#points = [];
       this.#destinations = [];
       this.#offers = [];
+      this._notify(UpdateType.ERROR);
       throw new Error('Can\'t get data from server');
     }
   }

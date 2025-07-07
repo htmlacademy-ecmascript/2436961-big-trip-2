@@ -2,6 +2,7 @@ import SortView from '../view/sort.js';
 import PointsListView from '../view/list-points.js';
 import NoPointView from '../view/no-point.js';
 import LoadingView from '../view/loading.js';
+import ErrorLoadView from '../view/error.js';
 import PointPresenter from './point-presenter.js';
 import {render, remove} from '../framework/render.js';
 import {SortType, UpdateType, UserAction, FilterType} from '../const.js';
@@ -21,6 +22,7 @@ export default class ListPointPresenter {
   #newEventButtonComponent = null;
   #noPointComponent = null;
   #loadingComponent = null;
+  #errorLoadComponent = null;
   #eventsContainer = null;
   #pointsModel = null;
   #filterModel = null;
@@ -98,7 +100,6 @@ export default class ListPointPresenter {
       pointsModel: this.#pointsModel,
       onDataChange: this.#handleViewAction,
       changeModeEdit: this.#changeModeEdit,
-      changeFavorite: this.#changeFavorite,
       newEventButton: this.#newEventButtonComponent,
       onEmptyList: this.#renderNoPoint,
     });
@@ -194,6 +195,12 @@ export default class ListPointPresenter {
           this.#renderListPoints();
         }
         break;
+      case UpdateType.ERROR:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#errorLoadComponent = new ErrorLoadView();
+        render(this.#errorLoadComponent, this.#eventsContainer);
+        break;
     }
   };
 
@@ -250,7 +257,6 @@ export default class ListPointPresenter {
       pointsModel: this.#pointsModel,
       onDataChange: this.#handleViewAction,
       changeModeEdit: this.#changeModeEdit,
-      changeFavorite: this.#changeFavorite,
       newEventButton: this.#newEventButtonComponent
     });
 
@@ -272,10 +278,5 @@ export default class ListPointPresenter {
   #changeModeEdit = () => {
     this.#pointsPresenters.forEach((presenter) => presenter.resetView());
     this.#onModeChange();
-  };
-
-  #changeFavorite = (updatedPoint) => {
-    this.points[this.points.findIndex((p) => p.id === updatedPoint.id)] = updatedPoint;
-    this.#pointsPresenters.get(updatedPoint.id).init(updatedPoint);
   };
 }

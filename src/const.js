@@ -39,16 +39,17 @@ export const UpdateType = {
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
   INIT: 'INIT',
+  ERROR: 'ERROR',
 };
 
 export const BLANK_POINT = {
   price: 0,
   startTime: new Date(),
   endTime: new Date(),
-  destination: '1',
+  destination: null,
   isFavorite: false,
   offers: [],
-  type: 'taxi',
+  type: 'flight',
 };
 
 export const Mode = {
