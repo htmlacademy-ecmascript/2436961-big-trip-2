@@ -137,12 +137,18 @@ export default class PointPresenter {
     if (evt.key === 'Escape') {
       evt.preventDefault();
       if (this.#addPointComponent) {
+        if (this.#addPointComponent._state.isDisabled || this.#addPointComponent._state.isSaving) {
+          return;
+        }
         remove(this.#addPointComponent);
         this.#addPointComponent = null;
         if (this.#newEventButton) {
           this.#newEventButton.disabled = false;
         }
       } else {
+        if (this.#pointEditComponent && (this.#pointEditComponent._state.isDisabled || this.#pointEditComponent._state.isSaving || this.#pointEditComponent._state.isDeleting)) {
+          return;
+        }
         this.#pointEditComponent.reset(this.#pointItem);
         this.#replaceFormToPoint();
       }
@@ -207,8 +213,6 @@ export default class PointPresenter {
       }
     } else {
       replace(this.#pointComponent, this.#pointEditComponent);
-      remove(this.#pointEditComponent);
-      this.#pointEditComponent = null;
     }
     this.#mode = Mode.DEFAULT;
     document.removeEventListener('keydown', this.#escKeyDownHandler);
