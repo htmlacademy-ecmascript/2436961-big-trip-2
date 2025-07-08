@@ -140,6 +140,7 @@ export default class ListPointPresenter {
         case UserAction.ADD_POINT:
           this.#creatingPointPresenter.setSaving();
           await this.#pointsModel.addPoint(updateType, update);
+          this.#creatingPointPresenter.destroy();
           this.#creatingPointPresenter = null;
           this.#newEventButtonComponent.disabled = false;
           break;
