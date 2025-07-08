@@ -13,16 +13,16 @@ export function calculatePointDuration(start, end) {
   const hours = Math.floor((durationInMinutes % 1440) / 60);
   const minutes = durationInMinutes % 60;
 
-  let durationString;
+  let durationResult;
 
   if (durationInMinutes < 60) {
-    durationString = `${minutes}M`;
+    durationResult = `${minutes}M`;
   } else if (durationInMinutes < 1440) {
-    durationString = `${String(hours).padStart(2, '0')}H ${String(minutes).padStart(2, '0')}M`;
+    durationResult = `${String(hours).padStart(2, '0')}H ${String(minutes).padStart(2, '0')}M`;
   } else {
-    durationString = `${String(days).padStart(2, '0')}D ${String(hours).padStart(2, '0')}H ${String(minutes).padStart(2, '0')}M`;
+    durationResult = `${String(days).padStart(2, '0')}D ${String(hours).padStart(2, '0')}H ${String(minutes).padStart(2, '0')}M`;
   }
-  return durationString;
+  return durationResult;
 }
 
 export function isPlannedPoint(dueDate){

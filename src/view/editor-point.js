@@ -1,6 +1,6 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import {humanizePointDate} from '../utils/point.js';
-import {EventType} from '../const.js';
+import {EventTypes} from '../const.js';
 import flatpickr from 'flatpickr';
 import {dateFormatConfig} from '../const.js';
 import he from 'he';
@@ -23,7 +23,7 @@ function createOffersOfPointTemplate(offers, checkedOffers, isDisabled) {
 }
 
 function createEventTypeItemsTemplate(currentType) {
-  return EventType.map((type) => `
+  return EventTypes.map((type) => `
     <div class="event__type-item">
       <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}"${currentType === type ? ' checked' : ''}>
       <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${type.charAt(0).toUpperCase() + type.slice(1)}</label>
