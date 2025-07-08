@@ -30,6 +30,7 @@ export default class ListPointPresenter {
   #filterType = FilterType.EVERYTHING;
   #currentSortType = SortType.DAY;
   #isLoading = true;
+  #creatingPointPresenter = null;
   #uiBlocker = new UiBlocker({
     lowerLimit: TimeLimit.LOWER_LIMIT,
     upperLimit: TimeLimit.UPPER_LIMIT
@@ -137,8 +138,9 @@ export default class ListPointPresenter {
           await this.#pointsModel.updatePoint(updateType, update);
           break;
         case UserAction.ADD_POINT:
-          this.#pointsPresenters.forEach((presenter) => presenter.setSaving());
+          this.#creatingPointPresenter.setSaving();
           await this.#pointsModel.addPoint(updateType, update);
+          this.#creatingPointPresenter = null;
           this.#newEventButtonComponent.disabled = false;
           break;
         case UserAction.DELETE_POINT:
@@ -153,7 +155,7 @@ export default class ListPointPresenter {
           this.#pointsPresenters.get(update.id).setAborting();
           break;
         case UserAction.ADD_POINT:
-          this.#pointsPresenters.forEach((presenter) => presenter.setAborting());
+          this.#creatingPointPresenter.setAborting();
           break;
         case UserAction.DELETE_POINT:
           this.#pointsPresenters.get(update.id).setAborting();
@@ -260,8 +262,8 @@ export default class ListPointPresenter {
       newEventButton: this.#newEventButtonComponent
     });
 
-    const newPoint = pointPresenter.createPoint();
-    this.#pointsPresenters.set(newPoint, pointPresenter);
+    pointPresenter.createPoint();
+    this.#creatingPointPresenter = pointPresenter;
   };
 
   #handleSortTypeChange = (sortType) => {
@@ -276,6 +278,11 @@ export default class ListPointPresenter {
   };
 
   #changeModeEdit = () => {
+    if (this.#creatingPointPresenter) {
+      this.#creatingPointPresenter.destroy();
+      this.#creatingPointPresenter = null;
+      this.#newEventButtonComponent.disabled = false;
+    }
     this.#pointsPresenters.forEach((presenter) => presenter.resetView());
     this.#onModeChange();
   };
