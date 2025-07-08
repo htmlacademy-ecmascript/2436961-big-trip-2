@@ -92,15 +92,15 @@ function createAddPointFormTemplate(point, offers, checkedOffers, destinations, 
                     </div>
                   </section>
                   ` : ''}
-                  
+
                   ${hasDestinationDetails ? `
                   <section class="event__section  event__section--destination">
                     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-                    ${hasDescription ? `<p class="event__destination-description">${destinations.description}</p>` : ''}
+                    ${hasDescription ? `<p class="event__destination-description">${he.encode(destinations.description)}</p>` : ''}
                     ${hasPictures ? `
                     <div class="event__photos-container">
                       <div class="event__photos-tape">
-                        ${destinations.pictures.map((item) => `<img class="event__photo" src=${item.src} alt="Event photo">`).join('')}
+                        ${destinations.pictures.map((item) => `<img class="event__photo" src="${he.encode(item.src)}" alt="Event photo">`).join('')}
                       </div>
                     </div>
                     ` : ''}

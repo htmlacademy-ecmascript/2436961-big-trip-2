@@ -13,18 +13,16 @@ export default class PointPresenter {
   #pointsModel = null;
   #onDataChange = null;
   #changeModeEdit = null;
-  #changeFavorite = null;
   #newEventButton = null;
   #mode = Mode.DEFAULT;
 
-  constructor ({pointListComponent, pointsModel, onDataChange, changeModeEdit, changeFavorite, newEventButton}) {
+  constructor ({pointListComponent, pointsModel, onDataChange, changeModeEdit, newEventButton}) {
     this.#pointListComponent = pointListComponent;
     this.#pointsModel = pointsModel;
     this.#newEventButton = newEventButton;
     window.pointsModel = this.#pointsModel;
     this.#onDataChange = onDataChange;
     this.#changeModeEdit = changeModeEdit;
-    this.#changeFavorite = changeFavorite;
   }
 
   init(oneItem) {
@@ -139,12 +137,18 @@ export default class PointPresenter {
     if (evt.key === 'Escape') {
       evt.preventDefault();
       if (this.#addPointComponent) {
+        if (this.#addPointComponent._state.isDisabled || this.#addPointComponent._state.isSaving) {
+          return;
+        }
         remove(this.#addPointComponent);
         this.#addPointComponent = null;
         if (this.#newEventButton) {
           this.#newEventButton.disabled = false;
         }
       } else {
+        if (this.#pointEditComponent && (this.#pointEditComponent._state.isDisabled || this.#pointEditComponent._state.isSaving || this.#pointEditComponent._state.isDeleting)) {
+          return;
+        }
         this.#pointEditComponent.reset(this.#pointItem);
         this.#replaceFormToPoint();
       }
@@ -171,15 +175,7 @@ export default class PointPresenter {
   }
 
   setAborting() {
-    if (this.#addPointComponent) {
-      const resetCreateFormState = () => {
-        this.#addPointComponent.updateElement({
-          isDisabled: false,
-          isSaving: false,
-        });
-      };
-      this.#addPointComponent.shake(resetCreateFormState);
-    } else if (this.#pointEditComponent) {
+    if (this.#mode === Mode.EDITING && this.#pointEditComponent) {
       const resetFormState = () => {
         this.#pointEditComponent.updateElement({
           isDisabled: false,
@@ -188,10 +184,16 @@ export default class PointPresenter {
         });
       };
       this.#pointEditComponent.shake(resetFormState);
-    } else if (this.#mode === Mode.DEFAULT) {
-      if (this.#pointComponent) {
-        this.#pointComponent.shake();
-      }
+    } else if (this.#mode === Mode.DEFAULT && this.#pointComponent) {
+      this.#pointComponent.shake();
+    } else if (this.#addPointComponent) {
+      const resetCreateFormState = () => {
+        this.#addPointComponent.updateElement({
+          isDisabled: false,
+          isSaving: false,
+        });
+      };
+      this.#addPointComponent.shake(resetCreateFormState);
     }
   }
 
@@ -229,11 +231,11 @@ export default class PointPresenter {
   }
 
   #handleFavoriteClick = () => {
-    this.#changeFavorite({...this.#pointItem, isFavorite: !this.#pointItem.isFavorite});
+    const updatedPoint = {...this.#pointItem, isFavorite: !this.#pointItem.isFavorite};
     this.#onDataChange(
       UserAction.UPDATE_POINT,
       UpdateType.PATCH,
-      this.#pointItem
+      updatedPoint
     );
   };
 

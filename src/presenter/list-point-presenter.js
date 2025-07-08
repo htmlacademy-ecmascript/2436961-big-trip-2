@@ -2,6 +2,7 @@ import SortView from '../view/sort.js';
 import PointsListView from '../view/list-points.js';
 import NoPointView from '../view/no-point.js';
 import LoadingView from '../view/loading.js';
+import ErrorLoadView from '../view/error.js';
 import PointPresenter from './point-presenter.js';
 import {render, remove} from '../framework/render.js';
 import {SortType, UpdateType, UserAction, FilterType} from '../const.js';
@@ -21,6 +22,7 @@ export default class ListPointPresenter {
   #newEventButtonComponent = null;
   #noPointComponent = null;
   #loadingComponent = null;
+  #errorLoadComponent = null;
   #eventsContainer = null;
   #pointsModel = null;
   #filterModel = null;
@@ -28,6 +30,7 @@ export default class ListPointPresenter {
   #filterType = FilterType.EVERYTHING;
   #currentSortType = SortType.DAY;
   #isLoading = true;
+  #creatingPointPresenter = null;
   #uiBlocker = new UiBlocker({
     lowerLimit: TimeLimit.LOWER_LIMIT,
     upperLimit: TimeLimit.UPPER_LIMIT
@@ -98,7 +101,6 @@ export default class ListPointPresenter {
       pointsModel: this.#pointsModel,
       onDataChange: this.#handleViewAction,
       changeModeEdit: this.#changeModeEdit,
-      changeFavorite: this.#changeFavorite,
       newEventButton: this.#newEventButtonComponent,
       onEmptyList: this.#renderNoPoint,
     });
@@ -136,8 +138,9 @@ export default class ListPointPresenter {
           await this.#pointsModel.updatePoint(updateType, update);
           break;
         case UserAction.ADD_POINT:
-          this.#pointsPresenters.forEach((presenter) => presenter.setSaving());
+          this.#creatingPointPresenter.setSaving();
           await this.#pointsModel.addPoint(updateType, update);
+          this.#creatingPointPresenter = null;
           this.#newEventButtonComponent.disabled = false;
           break;
         case UserAction.DELETE_POINT:
@@ -152,7 +155,7 @@ export default class ListPointPresenter {
           this.#pointsPresenters.get(update.id).setAborting();
           break;
         case UserAction.ADD_POINT:
-          this.#pointsPresenters.forEach((presenter) => presenter.setAborting());
+          this.#creatingPointPresenter.setAborting();
           break;
         case UserAction.DELETE_POINT:
           this.#pointsPresenters.get(update.id).setAborting();
@@ -193,6 +196,12 @@ export default class ListPointPresenter {
           this.#renderPointListComponent();
           this.#renderListPoints();
         }
+        break;
+      case UpdateType.ERROR:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#errorLoadComponent = new ErrorLoadView();
+        render(this.#errorLoadComponent, this.#eventsContainer);
         break;
     }
   };
@@ -250,12 +259,11 @@ export default class ListPointPresenter {
       pointsModel: this.#pointsModel,
       onDataChange: this.#handleViewAction,
       changeModeEdit: this.#changeModeEdit,
-      changeFavorite: this.#changeFavorite,
       newEventButton: this.#newEventButtonComponent
     });
 
-    const newPoint = pointPresenter.createPoint();
-    this.#pointsPresenters.set(newPoint, pointPresenter);
+    pointPresenter.createPoint();
+    this.#creatingPointPresenter = pointPresenter;
   };
 
   #handleSortTypeChange = (sortType) => {
@@ -270,12 +278,12 @@ export default class ListPointPresenter {
   };
 
   #changeModeEdit = () => {
+    if (this.#creatingPointPresenter) {
+      this.#creatingPointPresenter.destroy();
+      this.#creatingPointPresenter = null;
+      this.#newEventButtonComponent.disabled = false;
+    }
     this.#pointsPresenters.forEach((presenter) => presenter.resetView());
     this.#onModeChange();
-  };
-
-  #changeFavorite = (updatedPoint) => {
-    this.points[this.points.findIndex((p) => p.id === updatedPoint.id)] = updatedPoint;
-    this.#pointsPresenters.get(updatedPoint.id).init(updatedPoint);
   };
 }
